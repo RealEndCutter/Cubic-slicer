@@ -1,9 +1,12 @@
 #ifndef SLISER_H
 #define SLISER_H
 
+#include <iostream>
 #include <Eigen/Geometry>
 #include <vector>
 #include <cmath>
+#include <fstream>
+#include <iomanip>
 
 class CubeSliser {
 public:
@@ -33,10 +36,11 @@ private:
     float cubeY;
     float cubeZ;
 
-    // Functions
-    void generateFullInfill();
-    void generateDenseInfill();
-    void makeWall();
+    //gCode
+    std::string gCode;
+
+    std::string makeWall(float wallThinkness, float nozzleD, Eigen::Vector2f cubeDims, std::vector<Eigen::Vector2f>& wallTrj);
+    std::string infillZigZag(float wallThinkness, float nozzleD, Eigen::Vector2f cubeDims, std::vector<Eigen::Vector2f>& infillTrj, bool dir);
 };
 
 #endif // SLISER_H
