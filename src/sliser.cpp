@@ -37,7 +37,7 @@ void CubeSliser::slice() {
 
         float zCurrent = layerHeight*i;
         ss << ";LAYER_" << i << std::endl <<
-              "X" << 10 << "Y" << 10 << "Z" << zCurrent << std::endl;
+              "G0 " << "X" << 10 << " Y" << 10 << " Z" << zCurrent << std::endl;
         gCode += this->makeWall(wallThinkness, nozzleDiameter, Eigen::Vector2f(cubeX, cubeY), wallTrajectory);
         std::cout << "wall - OK \n";
         if(i <= bottomLayersCount) {
@@ -69,9 +69,9 @@ std::string CubeSliser::makeWall(float wallThinkness, float nozzleD, Eigen::Vect
         for(Eigen::Vector2f &num : countur) {
             num.array() -= i*nozzleD + nozzleD*N + nozzleD/2;
         }
-        ss << "G0" << "F6000" << "X" << countur[0].x() << "Y" << countur[0].y() << std::endl;
+        ss << "G0 " << "F6000 " << "X" << countur[0].x() << " Y" << countur[0].y() << std::endl;
         for(Eigen::Vector2f cord : countur) {
-            ss << "G1" << "X" << cord.x() << "Y" << cord.y() << std::endl;
+            ss << "G1 " << "X" << cord.x() << " Y" << cord.y() << std::endl;
             wallTrj.push_back(cord);
         }
     }
@@ -86,9 +86,9 @@ std::string CubeSliser::makeWall(float wallThinkness, float nozzleD, Eigen::Vect
     for(Eigen::Vector2f &num : countur) {
         num.array() += nozzleD/2;
     }
-    ss << "G0" << "F6000" << "X" << countur[0].x() << "Y" << countur[0].y() << std::endl;
+    ss << "G0 " << "F6000 " << "X" << countur[0].x() << " Y" << countur[0].y() << std::endl;
     for(Eigen::Vector2f cord : countur) {
-        ss << "G1" << "X" << cord.x() << "Y" << cord.y() << std::endl;
+        ss << "G1 " << "X" << cord.x() << " Y" << cord.y() << std::endl;
         wallTrj.push_back(cord);
     }
     std::string output = ss.str();
@@ -108,13 +108,13 @@ std::string CubeSliser::infillZigZag(float wallThinkness, float nozzleD, Eigen::
     for(Eigen::Vector2f &num : countur) {
         num.array() += nozzleD/2 + wallThinkness;
     }
-    ss << "G0" << "F6000" << "X" << countur[0].x() << "Y" << countur[0].y() << std::endl;
+    ss << "G0 " << "F6000 " << "X" << countur[0].x() << " Y" << countur[0].y() << std::endl;
     for(Eigen::Vector2f cord : countur) {
-        ss << "G1" << "X" << cord.x() << "Y" << cord.y() << std::endl;
+        ss << "G1 " << "X" << cord.x() << " Y" << cord.y() << std::endl;
         infillTrj.push_back(cord);
     }
     std::cout << "infill countur - OK\n";
-
+ 
     // Make infill zig-zag contour
     /*  __   __   __   __   _
        / /  / /  / /  / /  /
@@ -129,12 +129,12 @@ std::string CubeSliser::infillZigZag(float wallThinkness, float nozzleD, Eigen::
     Eigen::Vector2f start;
     Eigen::Vector2f end;
     if(dir) {
-            yUp << 0.0f, nozzleD;
+            yUp << 0.0f, -nozzleD;
             start << 0.0f, infillDim.y();
             end << infillDim.x() + infillTrj.back().x(), infillTrj.back().y(); 
     }
     else {
-            yUp << 0.0f, -nozzleD;
+            yUp << 0.0f, nozzleD;
             start << 0.0f, 0.0f;
             end << infillTrj.back().x() + infillDim.x(), infillTrj.back().y() - nozzleD + infillDim.y(); 
     }
@@ -157,15 +157,15 @@ std::string CubeSliser::infillZigZag(float wallThinkness, float nozzleD, Eigen::
             infillTrj.push_back(p1);
             infillTrj.push_back(p2);
             fillFlag = false;
-            ss << "G0" << "F6000" << "X" << p1.x() << "Y" << p1.y() << std::endl;
-            ss << "G1" << "F6000" << "X" << p2.x() << "Y" << p2.y() << std::endl;
+            ss << "G0 " << "F6000 " << "X " << p1.x() << " Y" << p1.y() << std::endl;
+            ss << "G1 " << "F1200 " << "X " << p2.x() << " Y" << p2.y() << std::endl;
         }
         else {
             infillTrj.push_back(p2);
             infillTrj.push_back(p1);
-            fillFlag = false;
-            ss << "G0" << "F6000" << "X" << p2.x() << "Y" << p2.y() << std::endl;
-            ss << "G1" << "F6000" << "X" << p1.x() << "Y" << p1.y() << std::endl;
+            fillFlag = true;
+            ss << "G0 " << "F6000 " << "X" << p2.x() << " Y" << p2.y() << std::endl;
+            ss << "G1 " << "F1200 " << "X" << p1.x() << " Y" << p1.y() << std::endl;
         }
     }
     std::string output = ss.str();
